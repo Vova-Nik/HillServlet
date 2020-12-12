@@ -1,40 +1,39 @@
 <%--
   Created by IntelliJ IDEA.
   User: Vovchik
-  Date: 01.12.2020
-  Time: 18:49
+  Date: 10.12.2020
+  Time: 08:35
   To change this template use File | Settings | File Templates.
 --%>
-page contentType="text/html;charset=UTF-8" language="java"
+<%--@ page contentType="text/html;charset=UTF-8" language="java" --%>
 <html>
 <head>
     <meta charset=\"UTF-8\">
     <link rel="stylesheet" type="text/css" href="style.css">
-
     <title>World DB</title>
 </head>
 <body>
 <div class="content-wrapper">
     <div class="btn-container">
-        <div class="button">
-            <a class="ref" href="${pageContext.request.contextPath}/index">Main page</a>
+        <div class="button mainpage-btn">
+            Main Page
         </div>
-        <div class="button">
-            <a class="ref" href="${pageContext.request.contextPath}/city">Cities</a>
+        <div class="button countries-btn">
+            Countries
         </div>
-        <div class="button">
-            <a class="ref" href="${pageContext.request.contextPath}/country">Countries</a>
+        <div class="button cities-btn">
+            Cities
         </div>
-        <div class="button">
-            <a class="ref" href="${pageContext.request.contextPath}/json">Swow DB</a>
+        <div class="button stat-btn">
+            Statistics
         </div>
     </div>
-
+    <div class="content"></div>
     <div class="message1">Welcome to World databese site</div>
     <div class="message2">Chose what to do</div>
 
     <div class="copyright">By Volodymyr Nikolenko. Java Elementary. HW26 Odessa Hillel 2020</div>
 </div>
-<%--$END$--%>
 </body>
+<script src="world.js"></script>
 </html>

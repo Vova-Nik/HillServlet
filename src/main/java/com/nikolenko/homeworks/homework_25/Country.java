@@ -23,5 +23,6 @@ public class Country{
     private final String governmentForm;
     private final String headOfState;
     private final int capital;
+    private final String cap;
     private final String code2;
 }

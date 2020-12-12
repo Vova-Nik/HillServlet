@@ -1,10 +1,14 @@
 package com.nikolenko.homeworks.homework_26;
 
+import com.fasterxml.jackson.databind.ObjectMapper;
+import com.google.gson.Gson;
+import com.google.gson.GsonBuilder;
 import com.nikolenko.homeworks.homework_25.City;
 import com.nikolenko.homeworks.homework_25.CityRepository;
 import com.nikolenko.homeworks.homework_25.Country;
 import com.nikolenko.homeworks.homework_25.CountryRepository;
 
+import java.util.ArrayList;
 import java.util.List;
 
 public class DbDataProvider {
@@ -17,7 +21,6 @@ public class DbDataProvider {
     public static StringBuilder getCitiesHTML() {
         CityRepository cityRepository = new CityRepository();
         List<City> cities = cityRepository.getAll();
-        cityRepository.close();
         StringBuilder sb = new StringBuilder();
         for (City city : cities) {
             sb.append("<div class='city-container'>")
@@ -44,7 +47,6 @@ public class DbDataProvider {
     public static StringBuilder getCountriesCSV() {
         CountryRepository countryRepository = new CountryRepository();
         List<Country> countries = countryRepository.getAll();
-        countryRepository.close();
         StringBuilder sb = new StringBuilder();
         sb
                 .append("Code").append(',')
@@ -84,13 +86,43 @@ public class DbDataProvider {
 
     public static String deleteCity(int id) {
         CityRepository cityRepository = new CityRepository();
-        if(!cityRepository.exists((long)id)){
-            return "There is no city with id = " + (long)id;
+        if (!cityRepository.exists((long) id)) {
+            return "There is no city with id = " + (long) id;
         }
-        City cityToDelete  = cityRepository.getById((long)id);
-        cityRepository.delete((long)id);
+        City cityToDelete = cityRepository.getById((long) id);
+        cityRepository.delete((long) id);
         cityRepository.close();
         return cityToDelete.getName();
+    }
+
+    public static StringBuilder getCitiesGSON() {
+        CityRepository cityRepository = new CityRepository();
+        List<City> cities = cityRepository.getAll();
+
+        ObjectMapper objectMapper = new ObjectMapper();
+        StringBuilder sb = new StringBuilder();
+
+        Gson gson = new GsonBuilder().create();
+        return new StringBuilder(gson.toJson(cities));
+    }
+
+    public static StringBuilder getCountriesJGSON(){
+        CountryRepository countryRepository = new CountryRepository();
+        List<Country> countries = countryRepository.getAll();
+        Gson gson = new GsonBuilder().create();
+        return new StringBuilder(gson.toJson(countries));
+    }
+
+    public static StringBuilder getStatJGSON(){
+        List<String> stat = new ArrayList<>();
+        CountryRepository countryRepository = new CountryRepository();
+        stat.add(String.valueOf(countryRepository.count()));
+        CityRepository cityRepository = new CityRepository();
+        String str = String.valueOf(cityRepository.count());
+        stat.add(str);
+
+        Gson gson = new GsonBuilder().create();
+        return new StringBuilder(gson.toJson(stat));
     }
 
 

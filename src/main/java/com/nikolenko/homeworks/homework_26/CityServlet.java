@@ -21,13 +21,11 @@ public class CityServlet extends HttpServlet {
         StringBuilder cities = DbDataProvider.getCitiesHTML();
         if (cities.length() == 0) {
             serviceMessage = "<h2>Sorry. Database inaccessible, try again later</h2>";
-            return;
         }
 
         req.setAttribute("service_message", serviceMessage);
         req.setAttribute("cities", cities);
 
-        req.getServletContext().getRequestDispatcher("/city.jsp").forward(req, resp);
-    }
+        req.getServletContext().getRequestDispatcher("/city.jsp").forward(req, resp);    }
 
 }

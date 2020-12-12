@@ -13,17 +13,23 @@ public class CountryRepository implements Repository<Country> {
     public Country getById(String id) {
         String query = "SELECT * FROM Country WHERE Code = '" + id + "'";
         ResultSet resultSet = ConnectionFactory.getResultSet(query);
-        ConnectionFactory.nextResultSet(resultSet);
-        return parseRecord(resultSet);
+        if (resultSet != null) {
+            ConnectionFactory.nextResultSet(resultSet);
+            return parseRecord(resultSet);
+        }
+        return null;
     }
 
     @Override
     public List<Country> getAll() {
-        String query = "SELECT * FROM Country WHERE 1";
-        List<Country> result = new ArrayList<Country>();
+//        String query = "SELECT * FROM Country WHERE 1";
+        String query = "SELECT S.*, G.Name as Cap FROM Country as S, City as G WHERE S.Capital = G.Id";
+        List<Country> result = new ArrayList<>();
         ResultSet resultSet = ConnectionFactory.getResultSet(query);
-        while (ConnectionFactory.nextResultSet(resultSet)) {
-            result.add(parseRecord(resultSet));
+        if (resultSet != null) {
+            while (ConnectionFactory.nextResultSet(resultSet)) {
+                result.add(parseRecord(resultSet));
+            }
         }
         return result;
     }
@@ -34,8 +40,10 @@ public class CountryRepository implements Repository<Country> {
         ResultSet resultSet = ConnectionFactory.getResultSet(query);
         long result = 0L;
         try {
-            resultSet.next();
-            result = resultSet.getLong("COUNT(*)");
+            if (resultSet != null) {
+                resultSet.next();
+                result = resultSet.getLong("COUNT(*)");
+            }
         } catch (SQLException e) {
             System.out.println(e.toString());
         }
@@ -47,8 +55,8 @@ public class CountryRepository implements Repository<Country> {
         String sql = "INSERT INTO Country (Code, Name, Continent, Region, SurfaceArea, IndepYear, Population, LifeExpectancy, GNP, GNPOld, LocalName, GovernmentForm, HeadOfState, Capital, Code2) " +
                 "Values (?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?)";
         PreparedStatement prepSt = ConnectionFactory.getPreparedStatement(sql);
-        int rows =0;
-        if(prepSt != null){
+        int rows = 0;
+        if (prepSt != null) {
             try {
                 prepSt.setString(1, country.getCode());
                 prepSt.setString(2, country.getName());
@@ -72,7 +80,7 @@ public class CountryRepository implements Repository<Country> {
             }
         }
         ConnectionFactory.preparedStatementClose(prepSt);
-        if(rows==0){
+        if (rows == 0) {
             return null;
         }
         return getById(country.getCode());
@@ -83,7 +91,7 @@ public class CountryRepository implements Repository<Country> {
         if (id.equals("1") || id.length() != 3 || id.contains("*") || id.contains("?")) {
             return;
         }
-        if(!exists(id)){
+        if (!exists(id)) {
             return;
         }
         String query = "DELETE FROM Country WHERE Code ='" + id + "'";
@@ -99,7 +107,7 @@ public class CountryRepository implements Repository<Country> {
         try {
             resultSet.next();
             result = resultSet.getLong("COUNT(1)");
-        } catch (SQLException e) {
+        } catch (SQLException | NullPointerException e) {
             System.out.println(e.toString());
         }
         return result > 0;
@@ -121,7 +129,7 @@ public class CountryRepository implements Repository<Country> {
     }
 
     @Override
-    public void close(){
+    public void close() {
         ConnectionFactory close;
     }
 
@@ -143,6 +151,7 @@ public class CountryRepository implements Repository<Country> {
                     .governmentForm(resultSet.getString("GovernmentForm"))
                     .headOfState(resultSet.getString("HeadOfState"))
                     .capital(resultSet.getInt("Capital"))
+                    .cap(resultSet.getString("Cap"))
                     .code2(resultSet.getString("Code2"))
                     .build();
         } catch (SQLException e) {

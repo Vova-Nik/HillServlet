@@ -7,7 +7,7 @@ body {
     block-size: border-box
 }
 
-.content-wrapper{
+.content-wrapper {
     padding: 0 8%;
     min-width: 480px;
     max-width: 1200px;
@@ -30,7 +30,7 @@ h1 h2 h3 {
     font-size: large;
 }
 
-.copyright{
+.copyright {
     margin-top: 20%;
     color: wheat;
     text-align: center;
@@ -91,8 +91,10 @@ h1 h2 h3 {
     border: 1px solid red;
     width: 18%;
     text-align: center;
+    cursor: pointer;
 }
-.button:hover{
+
+.button:hover {
     -webkit-box-shadow: 0 0 15px 4px #848484;
     box-shadow: 0 0 15px 4px #eb9494;
 }
@@ -143,3 +145,27 @@ h1 h2 h3 {
 .city-population {
     width: 20%;
 }
+
+.country-code {
+    width: 10%;
+}
+
+.country-region {
+    width: 25%;
+}
+
+.country-name {
+    width: 25%;
+}
+
+.country-capital {
+    width: 20%;
+}
+
+.country-population {
+    width: 10%;
+}
+.country-surfaceArea{
+    width: 10%;
+}
+

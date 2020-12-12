@@ -1,19 +1,16 @@
 package com.nikolenko.homeworks.homework_25;
 
-import lombok.extern.slf4j.Slf4j;
-
 import java.sql.*;
 import java.util.ArrayList;
 import java.util.List;
 
-@Slf4j
 public class CityRepository implements Repository<City> {
 
     @Override
     public City getById(Long id) throws IllegalArgumentException {
         String query = "SELECT * FROM City WHERE ID = " + id;
         ResultSet resultSet = ConnectionFactory.getResultSet(query);
-        if(resultSet==null){
+        if (resultSet == null) {
             return null;
         }
         ConnectionFactory.nextResultSet(resultSet);
@@ -25,7 +22,7 @@ public class CityRepository implements Repository<City> {
         String query = "SELECT * FROM City WHERE 1";
         List<City> cities = new ArrayList<>();
         ResultSet resultSet = ConnectionFactory.getResultSet(query);
-        if(resultSet==null){
+        if (resultSet == null) {
             return null;
         }
         while (ConnectionFactory.nextResultSet(resultSet)) {
@@ -37,7 +34,7 @@ public class CityRepository implements Repository<City> {
     @Override
     public void delete(Long id) {
         String query = "DELETE FROM City WHERE ID = " + id;
-        if(!exists(id)){
+        if (!exists(id)) {
             return;
         }
         Statement stmt = ConnectionFactory.getStatement();
@@ -50,8 +47,10 @@ public class CityRepository implements Repository<City> {
         ResultSet resultSet = ConnectionFactory.getResultSet(query);
         long result = 0;
         try {
-            resultSet.next();
-            result = resultSet.getLong("1");
+            if (resultSet != null) {
+                resultSet.next();
+                result = resultSet.getLong("1");
+            }
         } catch (SQLException e) {
             System.out.println(e.toString());
         }
@@ -61,25 +60,15 @@ public class CityRepository implements Repository<City> {
     @Override
     public Long count() {
         String query = "SELECT COUNT(*) FROM City";
-        ResultSet resultSet = null;
-        long result = 0;
-        try (Connection connection = DriverManager.getConnection(ConnectionFactory.getHost(), ConnectionFactory.getUsername(), ConnectionFactory.getPassword())) {
-            try (Statement stmt = connection.createStatement()) {
-                resultSet = stmt.executeQuery(query);
+        ResultSet resultSet = ConnectionFactory.getResultSet(query);
+        long result = 0L;
+        try {
+            if (resultSet != null) {
                 resultSet.next();
-                result = resultSet.getInt("count(*)");
-            } catch (SQLException e) {
-                log.error("Bad SQL " + e.toString());
+                result = resultSet.getLong("COUNT(*)");
             }
-        } catch (java.sql.SQLException e) {
-            log.error("Connection failed..." + e.toString());
-        }
-        if (resultSet != null) {
-            try {
-                resultSet.close();
-            } catch (java.sql.SQLException e) {
-                log.error("Result set closing failed..." + e.toString());
-            }
+        } catch (SQLException e) {
+            System.out.println(e.toString());
         }
         return result;
     }
@@ -89,8 +78,8 @@ public class CityRepository implements Repository<City> {
         String sql = "INSERT INTO City (Name, CountryCode, District, Population) " +
                 "Values (?, ?, ?, ?)";
         PreparedStatement prepSt = ConnectionFactory.getPreparedStatement(sql);
-        int rows =0;
-        if(prepSt != null){
+        int rows = 0;
+        if (prepSt != null) {
             try {
                 prepSt.setString(1, city.getName());
                 prepSt.setString(2, city.getCountryCode());
@@ -102,18 +91,17 @@ public class CityRepository implements Repository<City> {
                 e.printStackTrace();
             }
         }
-        if(rows==0){
+        if (rows == 0) {
             return null;
         }
         ConnectionFactory.preparedStatementClose(prepSt);
-        return  getByName(city.getName());
-
+        return getByName(city.getName());
     }
 
     public City getByName(String cityName) throws IllegalArgumentException {
         String query = "SELECT * FROM City WHERE Name = '" + cityName + "'";
         ResultSet resultSet = ConnectionFactory.getResultSet(query);
-        if(resultSet==null){
+        if (resultSet == null) {
             return null;
         }
         ConnectionFactory.nextResultSet(resultSet);
@@ -125,16 +113,19 @@ public class CityRepository implements Repository<City> {
     public City getById(String id) throws IllegalArgumentException {
         throw new IllegalArgumentException("There is no String type key in class City");
     }
+
     @Override
     public void delete(String id) {
         throw new IllegalArgumentException("There is no String type key in class City");
     }
+
     @Override
     public boolean exists(String id) throws IllegalArgumentException {
         throw new IllegalArgumentException("There is no String type key in class City");
     }
+
     @Override
-    public void close(){
+    public void close() {
         ConnectionFactory.close();
     }
 
