@@ -2,17 +2,19 @@ package com.nikolenko.homeworks.homework_25;
 
 import lombok.*;
 
-@RequiredArgsConstructor
+//@RequiredArgsConstructor
+@AllArgsConstructor
 @Getter
 @ToString
 @EqualsAndHashCode
-@Builder
+@NoArgsConstructor
+//@Builder
 public class City {
-    private final long id;
-    private final String name;
-    private final String countryCode;
-    private final String district;
-    private final int population;
+    private  long id;
+    private  String name;
+    private  String countryCode;
+    private  String district;
+    private  int population;
 }
 
 

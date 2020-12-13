@@ -1,5 +1,6 @@
 package com.nikolenko.homeworks.homework_25;
 
+import javax.sql.DataSource;
 import java.sql.*;
 import java.util.ArrayList;
 import java.util.List;
@@ -7,107 +8,128 @@ import java.util.List;
 public class CityRepository implements Repository<City> {
 
     @Override
-    public City getById(Long id) throws IllegalArgumentException {
-        String query = "SELECT * FROM City WHERE ID = " + id;
-        ResultSet resultSet = ConnectionFactory.getResultSet(query);
-        if (resultSet == null) {
+    public City getById(Long id) {
+        String query = "SELECT * FROM City WHERE ID = ?";
+        PreparedStatement prepStmt;
+        DataSource ds = PooledDataSource.getDataSource();
+        try (Connection connection = ds.getConnection()) {
+            prepStmt = connection.prepareStatement(query);
+            prepStmt.setLong(1, id);
+            ResultSet rs = prepStmt.executeQuery();
+            rs.next();
+            return parseRecord(rs);
+        } catch (SQLException e) {
+            e.printStackTrace();
             return null;
         }
-        ConnectionFactory.nextResultSet(resultSet);
-        return parseRecord(resultSet);
     }
 
     @Override
     public List<City> getAll() {
-        String query = "SELECT * FROM City WHERE 1";
         List<City> cities = new ArrayList<>();
-        ResultSet resultSet = ConnectionFactory.getResultSet(query);
-        if (resultSet == null) {
+        String query = "SELECT * FROM City WHERE 1";
+        PreparedStatement prepStmt = null;
+        DataSource ds = PooledDataSource.getDataSource();
+        try (Connection connection = ds.getConnection()) {
+            prepStmt = connection.prepareStatement(query);
+            ResultSet rs = prepStmt.executeQuery();
+            while (rs.next()) {
+                cities.add(parseRecord(rs));
+            }
+            return cities;
+        } catch (SQLException e) {
+            e.printStackTrace();
             return null;
         }
-        while (ConnectionFactory.nextResultSet(resultSet)) {
-            cities.add(parseRecord(resultSet));
-        }
-        return cities;
-    }
-
-    @Override
-    public void delete(Long id) {
-        String query = "DELETE FROM City WHERE ID = " + id;
-        if (!exists(id)) {
-            return;
-        }
-        Statement stmt = ConnectionFactory.getStatement();
-        ConnectionFactory.updateQuery(query);
-    }
-
-    @Override
-    public boolean exists(Long id) {
-        String query = "SELECT 1 FROM City WHERE ID = " + id + " LIMIT 1";
-        ResultSet resultSet = ConnectionFactory.getResultSet(query);
-        long result = 0;
-        try {
-            if (resultSet != null) {
-                resultSet.next();
-                result = resultSet.getLong("1");
-            }
-        } catch (SQLException e) {
-            System.out.println(e.toString());
-        }
-        return result > 0;
     }
 
     @Override
     public Long count() {
         String query = "SELECT COUNT(*) FROM City";
-        ResultSet resultSet = ConnectionFactory.getResultSet(query);
-        long result = 0L;
-        try {
-            if (resultSet != null) {
-                resultSet.next();
-                result = resultSet.getLong("COUNT(*)");
-            }
+        PreparedStatement prepStmt = null;
+        DataSource ds = PooledDataSource.getDataSource();
+        try (Connection connection = ds.getConnection()) {
+            prepStmt = connection.prepareStatement(query);
+            ResultSet rs = prepStmt.executeQuery();
+            rs.next();
+            return rs.getLong("COUNT(*)");
         } catch (SQLException e) {
-            System.out.println(e.toString());
+            e.printStackTrace();
+            return null;
         }
-        return result;
     }
 
     public City insert(City city) {
-
-        String sql = "INSERT INTO City (Name, CountryCode, District, Population) " +
+        String query = "INSERT INTO City (Name, CountryCode, District, Population) " +
                 "Values (?, ?, ?, ?)";
-        PreparedStatement prepSt = ConnectionFactory.getPreparedStatement(sql);
-        int rows = 0;
-        if (prepSt != null) {
-            try {
-                prepSt.setString(1, city.getName());
-                prepSt.setString(2, city.getCountryCode());
-                prepSt.setString(3, city.getDistrict());
-                prepSt.setInt(4, city.getPopulation());
-                rows = prepSt.executeUpdate();
-            } catch (Exception e) {
-                System.out.println("CityRepository insert() error " + e.toString());
-                e.printStackTrace();
-            }
-        }
-        if (rows == 0) {
+        PreparedStatement prepStmt = null;
+        DataSource ds = PooledDataSource.getDataSource();
+        try (Connection connection = ds.getConnection()) {
+            prepStmt = connection.prepareStatement(query);
+            prepStmt.setString(1, city.getName());
+            prepStmt.setString(2, city.getCountryCode());
+            prepStmt.setString(3, city.getDistrict());
+            prepStmt.setInt(4, city.getPopulation());
+            prepStmt.executeUpdate();
+        } catch (Exception e) {
+            e.printStackTrace();
             return null;
         }
-        ConnectionFactory.preparedStatementClose(prepSt);
         return getByName(city.getName());
     }
 
-    public City getByName(String cityName) throws IllegalArgumentException {
-        String query = "SELECT * FROM City WHERE Name = '" + cityName + "'";
-        ResultSet resultSet = ConnectionFactory.getResultSet(query);
-        if (resultSet == null) {
-            return null;
+    @Override
+    public void delete(Long id) {
+        String query = "DELETE FROM City WHERE ID = ?";
+        if (!exists(id)) {
+            return;
         }
-        ConnectionFactory.nextResultSet(resultSet);
-        return parseRecord(resultSet);
+        PreparedStatement prepStmt = null;
+        DataSource ds = PooledDataSource.getDataSource();
+        try (Connection connection = ds.getConnection()) {
+            prepStmt = connection.prepareStatement(query);
+            prepStmt.setLong(1, id);
+            prepStmt.execute();
+        } catch (SQLException e) {
+            e.printStackTrace();
+        }
     }
 
+    @Override
+    public boolean exists(Long id) {
+        String query = "SELECT 1 FROM City WHERE ID = ?  LIMIT 1";
+        PreparedStatement prepStmt = null;
+        DataSource ds = PooledDataSource.getDataSource();
+        long result = 0;
+        try (Connection connection = ds.getConnection()) {
+            prepStmt = connection.prepareStatement(query);
+            prepStmt.setLong(1, id);
+            ResultSet rs = prepStmt.executeQuery();
+            rs.next();
+            result = rs.getLong("1");
+            return result > 0;
+        } catch (SQLException e) {
+            e.printStackTrace();
+            return false;
+        }
+    }
+
+    public City getByName(String cityName) {
+        String query = "SELECT * FROM City WHERE Name =  ? ";
+
+        PreparedStatement prepStmt = null;
+        DataSource ds = PooledDataSource.getDataSource();
+        try (Connection connection = ds.getConnection()) {
+            prepStmt = connection.prepareStatement(query);
+            prepStmt.setString(1, cityName);
+            ResultSet rs = prepStmt.executeQuery();
+            rs.next();
+            return parseRecord(rs);
+        } catch (SQLException e) {
+            e.printStackTrace();
+            return null;
+        }
+    }
 
     @Override
     public City getById(String id) throws IllegalArgumentException {
@@ -115,7 +137,7 @@ public class CityRepository implements Repository<City> {
     }
 
     @Override
-    public void delete(String id) {
+    public void delete(String id) throws IllegalArgumentException {
         throw new IllegalArgumentException("There is no String type key in class City");
     }
 
@@ -124,21 +146,14 @@ public class CityRepository implements Repository<City> {
         throw new IllegalArgumentException("There is no String type key in class City");
     }
 
-    @Override
-    public void close() {
-        ConnectionFactory.close();
-    }
-
     private City parseRecord(ResultSet resultSet) {
         City city = null;
         try {
-            city = City.builder()
-                    .id(resultSet.getInt("ID"))
-                    .name(resultSet.getString("Name"))
-                    .countryCode(resultSet.getString("CountryCode"))
-                    .district(resultSet.getString("District"))
-                    .population(resultSet.getInt("Population"))
-                    .build();
+            city = new City(resultSet.getInt("ID"),
+                    resultSet.getString("Name"),
+                    resultSet.getString("CountryCode"),
+                    resultSet.getString("District"),
+                    resultSet.getInt("Population"));
         } catch (SQLException e) {
             System.out.println("Bad SQL. CityRepository.parseRecord()" + e.toString());
             return city;

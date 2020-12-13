@@ -15,5 +15,5 @@ public interface Repository<T> {
     List<T> getAll();
     Long count();
     T insert(T rec);
-    void close();
+//    void close();
 }

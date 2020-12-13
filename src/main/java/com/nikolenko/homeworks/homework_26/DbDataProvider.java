@@ -12,6 +12,22 @@ import java.util.ArrayList;
 import java.util.List;
 
 public class DbDataProvider {
+//    private  DbDataProvider instance = null;
+//    private  final CityRepository cityRepository;
+//    private  final CountryRepository countryRepository;
+//
+//    private DbDataProvider() {
+//        cityRepository = new CityRepository();
+//        countryRepository = new CountryRepository();
+//        instance = this;
+//    }
+//
+//    public static DbDataProvider getInstance(){
+//        if(instance==null){
+//            instance = new DbDataProvider();
+//        }
+//        return instance;
+//    }
 
     public static List<City> getCities() {
         CityRepository cityRepository = new CityRepository();
@@ -91,7 +107,7 @@ public class DbDataProvider {
         }
         City cityToDelete = cityRepository.getById((long) id);
         cityRepository.delete((long) id);
-        cityRepository.close();
+//        cityRepository.close();
         return cityToDelete.getName();
     }
 
@@ -106,14 +122,14 @@ public class DbDataProvider {
         return new StringBuilder(gson.toJson(cities));
     }
 
-    public static StringBuilder getCountriesJGSON(){
+    public static StringBuilder getCountriesJGSON() {
         CountryRepository countryRepository = new CountryRepository();
         List<Country> countries = countryRepository.getAll();
         Gson gson = new GsonBuilder().create();
         return new StringBuilder(gson.toJson(countries));
     }
 
-    public static StringBuilder getStatJGSON(){
+    public static StringBuilder getStatJGSON() {
         List<String> stat = new ArrayList<>();
         CountryRepository countryRepository = new CountryRepository();
         stat.add(String.valueOf(countryRepository.count()));

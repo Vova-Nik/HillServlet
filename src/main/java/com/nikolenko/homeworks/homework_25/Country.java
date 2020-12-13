@@ -2,15 +2,13 @@ package com.nikolenko.homeworks.homework_25;
 
 import lombok.*;
 
-//@AllArgsConstructor
+@AllArgsConstructor
 @ToString
 @EqualsAndHashCode
 @Getter
-@Builder
 public class Country{
     private final String code;
     private final String name;
-//    private final Continent continent;
     private final String continent;
     private final String region;
     private final double surfaceArea;

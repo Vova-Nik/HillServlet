@@ -13,7 +13,6 @@ public class IndexServlet extends HttpServlet {
     String head;
     @Override
     public void init() throws ServletException {
-        head = HtmlTemplate.getHead();
     }
 
     @Override

@@ -1,9 +1,7 @@
 package com.nikolenko.homeworks.homework_25;
 
-import java.sql.PreparedStatement;
-import java.sql.ResultSet;
-import java.sql.SQLException;
-import java.sql.Statement;
+import javax.sql.DataSource;
+import java.sql.*;
 import java.util.ArrayList;
 import java.util.List;
 
@@ -11,76 +9,82 @@ public class CountryRepository implements Repository<Country> {
 
     @Override
     public Country getById(String id) {
-        String query = "SELECT * FROM Country WHERE Code = '" + id + "'";
-        ResultSet resultSet = ConnectionFactory.getResultSet(query);
-        if (resultSet != null) {
-            ConnectionFactory.nextResultSet(resultSet);
-            return parseRecord(resultSet);
+        String query = "SELECT * FROM Country WHERE Code = ?";
+        PreparedStatement prepStmt = null;
+        DataSource ds = PooledDataSource.getDataSource();
+        try (Connection connection = ds.getConnection()) {
+            prepStmt = connection.prepareStatement(query);
+            prepStmt.setString(1, id);
+            ResultSet rs = prepStmt.executeQuery();
+            rs.next();
+            return parseRecord(rs);
+        } catch (SQLException e) {
+            e.printStackTrace();
+            return null;
         }
-        return null;
     }
 
     @Override
     public List<Country> getAll() {
-//        String query = "SELECT * FROM Country WHERE 1";
         String query = "SELECT S.*, G.Name as Cap FROM Country as S, City as G WHERE S.Capital = G.Id";
-        List<Country> result = new ArrayList<>();
-        ResultSet resultSet = ConnectionFactory.getResultSet(query);
-        if (resultSet != null) {
-            while (ConnectionFactory.nextResultSet(resultSet)) {
-                result.add(parseRecord(resultSet));
+        List<Country> countries = new ArrayList<>();
+        PreparedStatement prepStmt = null;
+        DataSource ds = PooledDataSource.getDataSource();
+        try (Connection connection = ds.getConnection()) {
+            prepStmt = connection.prepareStatement(query);
+            ResultSet rs = prepStmt.executeQuery();
+            while (rs.next()) {
+                countries.add(parseRecord(rs));
             }
+            return countries;
+        } catch (SQLException e) {
+            e.printStackTrace();
+            return null;
         }
-        return result;
     }
 
     @Override
     public Long count() {
         String query = "SELECT COUNT(*) FROM Country";
-        ResultSet resultSet = ConnectionFactory.getResultSet(query);
-        long result = 0L;
-        try {
-            if (resultSet != null) {
-                resultSet.next();
-                result = resultSet.getLong("COUNT(*)");
-            }
+        PreparedStatement prepStmt = null;
+        DataSource ds = PooledDataSource.getDataSource();
+        try (Connection connection = ds.getConnection()) {
+            prepStmt = connection.prepareStatement(query);
+            ResultSet rs = prepStmt.executeQuery();
+            rs.next();
+            return rs.getLong("COUNT(*)");
         } catch (SQLException e) {
-            System.out.println(e.toString());
+            e.printStackTrace();
+            return null;
         }
-        return result;
     }
 
     @Override
     public Country insert(Country country) {
-        String sql = "INSERT INTO Country (Code, Name, Continent, Region, SurfaceArea, IndepYear, Population, LifeExpectancy, GNP, GNPOld, LocalName, GovernmentForm, HeadOfState, Capital, Code2) " +
+        String query = "INSERT INTO Country (Code, Name, Continent, Region, SurfaceArea, IndepYear, Population, LifeExpectancy, GNP, GNPOld, LocalName, GovernmentForm, HeadOfState, Capital, Code2) " +
                 "Values (?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?)";
-        PreparedStatement prepSt = ConnectionFactory.getPreparedStatement(sql);
-        int rows = 0;
-        if (prepSt != null) {
-            try {
-                prepSt.setString(1, country.getCode());
-                prepSt.setString(2, country.getName());
-                prepSt.setString(3, country.getContinent());
-                prepSt.setString(4, country.getRegion());
-                prepSt.setDouble(5, country.getSurfaceArea());
-                prepSt.setInt(6, country.getIndepYear());
-                prepSt.setInt(7, country.getPopulation());
-                prepSt.setDouble(8, country.getLifeExpectancy());
-                prepSt.setDouble(9, country.getGnp());
-                prepSt.setDouble(10, country.getGnpOld());
-                prepSt.setString(11, country.getLocalName());
-                prepSt.setString(12, country.getGovernmentForm());
-                prepSt.setString(13, country.getHeadOfState());
-                prepSt.setInt(14, country.getCapital());
-                prepSt.setString(15, country.getCode2());
-                rows = prepSt.executeUpdate();
-            } catch (Exception e) {
-                System.out.println("CountryRepository insert error " + e.toString());
-                e.printStackTrace();
-            }
-        }
-        ConnectionFactory.preparedStatementClose(prepSt);
-        if (rows == 0) {
+        PreparedStatement prepStmt = null;
+        DataSource ds = PooledDataSource.getDataSource();
+        try (Connection connection = ds.getConnection()) {
+            prepStmt = connection.prepareStatement(query);
+            prepStmt.setString(1, country.getCode());
+            prepStmt.setString(2, country.getName());
+            prepStmt.setString(3, country.getContinent());
+            prepStmt.setString(4, country.getRegion());
+            prepStmt.setDouble(5, country.getSurfaceArea());
+            prepStmt.setInt(6, country.getIndepYear());
+            prepStmt.setInt(7, country.getPopulation());
+            prepStmt.setDouble(8, country.getLifeExpectancy());
+            prepStmt.setDouble(9, country.getGnp());
+            prepStmt.setDouble(10, country.getGnpOld());
+            prepStmt.setString(11, country.getLocalName());
+            prepStmt.setString(12, country.getGovernmentForm());
+            prepStmt.setString(13, country.getHeadOfState());
+            prepStmt.setInt(14, country.getCapital());
+            prepStmt.setString(15, country.getCode2());
+            prepStmt.executeUpdate();
+        } catch (Exception e) {
+            e.printStackTrace();
             return null;
         }
         return getById(country.getCode());
@@ -94,23 +98,35 @@ public class CountryRepository implements Repository<Country> {
         if (!exists(id)) {
             return;
         }
-        String query = "DELETE FROM Country WHERE Code ='" + id + "'";
-        Statement stmt = ConnectionFactory.getStatement();
-        ConnectionFactory.updateQuery(query);
+        String query = "DELETE FROM Country WHERE Code = ?";
+        PreparedStatement prepStmt = null;
+        DataSource ds = PooledDataSource.getDataSource();
+        try (Connection connection = ds.getConnection()) {
+            prepStmt = connection.prepareStatement(query);
+            prepStmt.setString(1, id);
+            prepStmt.execute();
+        } catch (SQLException e) {
+            e.printStackTrace();
+        }
     }
 
     @Override
     public boolean exists(String id) {
-        String query = "SELECT COUNT(1) FROM Country WHERE Code = " + "'" + id + "'";
-        ResultSet resultSet = ConnectionFactory.getResultSet(query);
+        String query = "SELECT COUNT(1) FROM Country WHERE Code = ?";
+        PreparedStatement prepStmt;
+        DataSource ds = PooledDataSource.getDataSource();
         long result = 0;
-        try {
-            resultSet.next();
-            result = resultSet.getLong("COUNT(1)");
-        } catch (SQLException | NullPointerException e) {
-            System.out.println(e.toString());
+        try (Connection connection = ds.getConnection()) {
+            prepStmt = connection.prepareStatement(query);
+            prepStmt.setString(1, id);
+            ResultSet rs = prepStmt.executeQuery();
+            rs.next();
+            result = rs.getLong("1");
+            return result > 0;
+        } catch (SQLException e) {
+            e.printStackTrace();
+            return false;
         }
-        return result > 0;
     }
 
     @Override
@@ -128,32 +144,26 @@ public class CountryRepository implements Repository<Country> {
         throw new IllegalArgumentException("There is no String type key in class Country");
     }
 
-    @Override
-    public void close() {
-        ConnectionFactory close;
-    }
-
     private Country parseRecord(ResultSet resultSet) {
         Country country = null;
         try {
-            country = Country.builder()
-                    .code(resultSet.getString("Code"))
-                    .name(resultSet.getString("Name"))
-                    .continent(resultSet.getString("Continent"))
-                    .region(resultSet.getString("Region"))
-                    .surfaceArea(resultSet.getDouble("SurfaceArea"))
-                    .indepYear(resultSet.getInt("IndepYear"))
-                    .population(resultSet.getInt("Population"))
-                    .lifeExpectancy(resultSet.getDouble("LifeExpectancy"))
-                    .gnp(resultSet.getDouble("GNP"))
-                    .gnpOld(resultSet.getDouble("GNPOld"))
-                    .localName(resultSet.getString("LocalName"))
-                    .governmentForm(resultSet.getString("GovernmentForm"))
-                    .headOfState(resultSet.getString("HeadOfState"))
-                    .capital(resultSet.getInt("Capital"))
-                    .cap(resultSet.getString("Cap"))
-                    .code2(resultSet.getString("Code2"))
-                    .build();
+            country = new Country(resultSet.getString("Code"),
+                    resultSet.getString("Name"),
+                    resultSet.getString("Continent"),
+                    resultSet.getString("Region"),
+                    resultSet.getDouble("SurfaceArea"),
+                    resultSet.getInt("IndepYear"),
+                    resultSet.getInt("Population"),
+                    resultSet.getDouble("LifeExpectancy"),
+                    resultSet.getDouble("GNP"),
+                    resultSet.getDouble("GNPOld"),
+                    resultSet.getString("LocalName"),
+                    resultSet.getString("GovernmentForm"),
+                    resultSet.getString("HeadOfState"),
+                    resultSet.getInt("Capital"),
+                    resultSet.getString("Cap"),
+                    resultSet.getString("Code2"));
+
         } catch (SQLException e) {
             System.out.println("Bad SQL " + e.toString());
             return country;
