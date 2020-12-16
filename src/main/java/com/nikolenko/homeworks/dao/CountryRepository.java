@@ -1,4 +1,6 @@
-package com.nikolenko.homeworks.homework_25;
+package com.nikolenko.homeworks.dao;
+
+import com.fasterxml.jackson.databind.ObjectMapper;
 
 import javax.sql.DataSource;
 import java.sql.*;
@@ -9,8 +11,9 @@ public class CountryRepository implements Repository<Country> {
 
     @Override
     public Country getById(String id) {
-        String query = "SELECT * FROM Country WHERE Code = ?";
-        PreparedStatement prepStmt = null;
+        //        String query = "SELECT * FROM Country WHERE Code = ?"; //Need do add Capital as String instead of long key
+        String query = "SELECT * FROM(SELECT S.*, G.Name as Cap FROM Country as S, City as G WHERE S.Capital = G.Id) as cl WHERE Code LIKE ?";
+        PreparedStatement prepStmt;
         DataSource ds = PooledDataSource.getDataSource();
         try (Connection connection = ds.getConnection()) {
             prepStmt = connection.prepareStatement(query);
@@ -28,7 +31,7 @@ public class CountryRepository implements Repository<Country> {
     public List<Country> getAll() {
         String query = "SELECT S.*, G.Name as Cap FROM Country as S, City as G WHERE S.Capital = G.Id";
         List<Country> countries = new ArrayList<>();
-        PreparedStatement prepStmt = null;
+        PreparedStatement prepStmt;
         DataSource ds = PooledDataSource.getDataSource();
         try (Connection connection = ds.getConnection()) {
             prepStmt = connection.prepareStatement(query);
@@ -46,7 +49,7 @@ public class CountryRepository implements Repository<Country> {
     @Override
     public Long count() {
         String query = "SELECT COUNT(*) FROM Country";
-        PreparedStatement prepStmt = null;
+        PreparedStatement prepStmt;
         DataSource ds = PooledDataSource.getDataSource();
         try (Connection connection = ds.getConnection()) {
             prepStmt = connection.prepareStatement(query);
@@ -63,7 +66,7 @@ public class CountryRepository implements Repository<Country> {
     public Country insert(Country country) {
         String query = "INSERT INTO Country (Code, Name, Continent, Region, SurfaceArea, IndepYear, Population, LifeExpectancy, GNP, GNPOld, LocalName, GovernmentForm, HeadOfState, Capital, Code2) " +
                 "Values (?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?)";
-        PreparedStatement prepStmt = null;
+        PreparedStatement prepStmt;
         DataSource ds = PooledDataSource.getDataSource();
         try (Connection connection = ds.getConnection()) {
             prepStmt = connection.prepareStatement(query);
@@ -99,7 +102,7 @@ public class CountryRepository implements Repository<Country> {
             return;
         }
         String query = "DELETE FROM Country WHERE Code = ?";
-        PreparedStatement prepStmt = null;
+        PreparedStatement prepStmt;
         DataSource ds = PooledDataSource.getDataSource();
         try (Connection connection = ds.getConnection()) {
             prepStmt = connection.prepareStatement(query);
@@ -115,7 +118,7 @@ public class CountryRepository implements Repository<Country> {
         String query = "SELECT COUNT(1) FROM Country WHERE Code = ?";
         PreparedStatement prepStmt;
         DataSource ds = PooledDataSource.getDataSource();
-        long result = 0;
+        long result;
         try (Connection connection = ds.getConnection()) {
             prepStmt = connection.prepareStatement(query);
             prepStmt.setString(1, id);
@@ -147,6 +150,7 @@ public class CountryRepository implements Repository<Country> {
     private Country parseRecord(ResultSet resultSet) {
         Country country = null;
         try {
+//            String sss = resultSet.getString("Name");
             country = new Country(resultSet.getString("Code"),
                     resultSet.getString("Name"),
                     resultSet.getString("Continent"),
@@ -171,4 +175,29 @@ public class CountryRepository implements Repository<Country> {
         return country;
     }
 
+//    @Override
+//    public String getJsonById(Long id){
+//        Country country = this.getById(id);
+//        String res = "";
+//        ObjectMapper objectMapper = new ObjectMapper();
+//        try {
+//            res = objectMapper.writeValueAsString(country);
+//        } catch (com.fasterxml.jackson.core.JsonProcessingException e) {
+//            e.printStackTrace();
+//        }
+//        return res;
+//    }
+
+//    @Override
+//    public  String getAllJson() {
+//        List<Country> countries = this.getAll();
+//        String res = "";
+//        ObjectMapper objectMapper = new ObjectMapper();
+//        try {
+//            res = objectMapper.writeValueAsString(countries);
+//        } catch (com.fasterxml.jackson.core.JsonProcessingException e) {
+//            e.printStackTrace();
+//        }
+//        return res;
+//    }
 }

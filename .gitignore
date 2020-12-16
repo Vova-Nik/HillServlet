@@ -101,6 +101,7 @@ hs_err_pid*
 Hillel.iml
 /target/
 log.txt
+test.html
 
 src/test/java/com/nikolenko/homeworks/homework_11
 .tmp.drivedownload/*

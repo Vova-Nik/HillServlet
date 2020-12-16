@@ -1,4 +1,6 @@
-package com.nikolenko.homeworks.homework_25;
+package com.nikolenko.homeworks.dao;
+
+import com.fasterxml.jackson.databind.ObjectMapper;
 
 import javax.sql.DataSource;
 import java.sql.*;
@@ -28,7 +30,7 @@ public class CityRepository implements Repository<City> {
     public List<City> getAll() {
         List<City> cities = new ArrayList<>();
         String query = "SELECT * FROM City WHERE 1";
-        PreparedStatement prepStmt = null;
+        PreparedStatement prepStmt;
         DataSource ds = PooledDataSource.getDataSource();
         try (Connection connection = ds.getConnection()) {
             prepStmt = connection.prepareStatement(query);
@@ -46,7 +48,7 @@ public class CityRepository implements Repository<City> {
     @Override
     public Long count() {
         String query = "SELECT COUNT(*) FROM City";
-        PreparedStatement prepStmt = null;
+        PreparedStatement prepStmt;
         DataSource ds = PooledDataSource.getDataSource();
         try (Connection connection = ds.getConnection()) {
             prepStmt = connection.prepareStatement(query);
@@ -62,7 +64,7 @@ public class CityRepository implements Repository<City> {
     public City insert(City city) {
         String query = "INSERT INTO City (Name, CountryCode, District, Population) " +
                 "Values (?, ?, ?, ?)";
-        PreparedStatement prepStmt = null;
+        PreparedStatement prepStmt;
         DataSource ds = PooledDataSource.getDataSource();
         try (Connection connection = ds.getConnection()) {
             prepStmt = connection.prepareStatement(query);
@@ -84,7 +86,7 @@ public class CityRepository implements Repository<City> {
         if (!exists(id)) {
             return;
         }
-        PreparedStatement prepStmt = null;
+        PreparedStatement prepStmt;
         DataSource ds = PooledDataSource.getDataSource();
         try (Connection connection = ds.getConnection()) {
             prepStmt = connection.prepareStatement(query);
@@ -98,9 +100,9 @@ public class CityRepository implements Repository<City> {
     @Override
     public boolean exists(Long id) {
         String query = "SELECT 1 FROM City WHERE ID = ?  LIMIT 1";
-        PreparedStatement prepStmt = null;
+        PreparedStatement prepStmt;
         DataSource ds = PooledDataSource.getDataSource();
-        long result = 0;
+        long result;
         try (Connection connection = ds.getConnection()) {
             prepStmt = connection.prepareStatement(query);
             prepStmt.setLong(1, id);
@@ -117,7 +119,7 @@ public class CityRepository implements Repository<City> {
     public City getByName(String cityName) {
         String query = "SELECT * FROM City WHERE Name =  ? ";
 
-        PreparedStatement prepStmt = null;
+        PreparedStatement prepStmt;
         DataSource ds = PooledDataSource.getDataSource();
         try (Connection connection = ds.getConnection()) {
             prepStmt = connection.prepareStatement(query);
@@ -160,4 +162,31 @@ public class CityRepository implements Repository<City> {
         }
         return city;
     }
+
+//    @Override
+//    public String getJsonById(Long id) {
+//        City city = this.getById((long) id);
+//        String res = "";
+//        ObjectMapper objectMapper = new ObjectMapper();
+//        try {
+//            res = objectMapper.writeValueAsString(city);
+//        } catch (com.fasterxml.jackson.core.JsonProcessingException e) {
+//            e.printStackTrace();
+//        }
+//        return res;
+//    }
+
+//    @Override
+//    public String getAllJson() {
+//        List<City> cities = this.getAll();
+//        String res = "";
+//        ObjectMapper objectMapper = new ObjectMapper();
+//        try {
+//            res = objectMapper.writeValueAsString(cities);
+//        } catch (com.fasterxml.jackson.core.JsonProcessingException e) {
+//            e.printStackTrace();
+//        }
+//        return sb;
+//    }
+
 }
