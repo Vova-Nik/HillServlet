@@ -1,4 +1,4 @@
-package com.nikolenko.homeworks.homework_25;
+package com.nikolenko.homeworks.dao;
 
 import lombok.*;
 

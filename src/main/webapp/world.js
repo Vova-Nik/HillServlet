@@ -1,8 +1,10 @@
 console.log("in script!!!");
+let state = "init"; // countries - countries, cities - cities, statistics - statistics
 let countriesBtn = document.querySelector(".countries-btn");
 let citiesBtn = document.querySelector(".cities-btn");
 let statBtn = document.querySelector(".stat-btn");
-let mainpageBtn = document.querySelector(".mainpage-btn");
+let downloadBtn = document.querySelector(".download-btn");
+update();
 
 let message1 = document.querySelector(".message1");
 let message2 = document.querySelector(".message2");
@@ -11,14 +13,15 @@ let content = document.querySelector(".content");
 countriesBtn.addEventListener("click", countries);
 citiesBtn.addEventListener("click", cities);
 statBtn.addEventListener("click", stat);
-mainpageBtn.addEventListener("click", mainpage);
+downloadBtn.addEventListener("click", download);
 
 async function countries() {
-    console.log("in countries!!!");
+    state = "countries";
+    update();
     message1.innerHTML = " ";
     message2.innerHTML = " ";
     content.innerHTML = " ";
-    let response = await fetch('/myApp/json', {method: 'POST', headers: {operation: 'countries'}});
+    let response = await fetch('/myApp/index', { method: 'POST', headers: { operation: 'show', entity: state } });
 
     if (response.ok) {
         let json = await response.json();
@@ -40,16 +43,17 @@ async function countries() {
             content.append(div);
         }
     } else {
-        alert("Ошибка HTTP: " + response.status);
+        alert("HTTP error: " + response.status);
     }
 }
 
 async function cities() {
-    console.log("in cities!!!");
+    state = "cities";
+    update();
     message1.innerHTML = " ";
     message2.innerHTML = " ";
     content.innerHTML = " ";
-    let response = await fetch('/myApp/json', {method: 'POST', headers: {operation: 'cities'}});
+    let response = await fetch('/myApp/index', { method: 'POST', headers: { operation: 'show', entity: state } });
 
     if (response.ok) {
         let json = await response.json();
@@ -57,7 +61,7 @@ async function cities() {
         div.className = "city-container";
         let str = " ";
         for (let i = 0; i < json.length; i++) {
-             str =
+            str =
                 `<div class='city-item city-id'>${json[i].id}</div> 
                 <div class='city-item city-name'> ${json[i].name}</div> 
                 <div class='city-item city-countryCode'> ${json[i].countryCode}</div> 
@@ -69,17 +73,18 @@ async function cities() {
             content.append(div);
         }
     } else {
-        alert("Ошибка HTTP: " + response.status);
+        alert("HTTP error: " + response.status);
     }
 }
 
 async function stat() {
-    console.log("in stat!!!");
+    state = "statistics";
+    update();
     message1.innerHTML = " ";
     message2.innerHTML = " ";
     content.innerHTML = " ";
 
-    let response = await fetch('/myApp/json', {method: 'POST', headers: {operation: 'statistics'}});
+    let response = await fetch('/myApp/index', { method: 'POST', headers: { operation: 'show', entity: state } });
 
     if (response.ok) {
         let json = await response.json();
@@ -92,12 +97,40 @@ async function stat() {
         div.innerHTML = `There are ${json[0]} countries </br> There are ${json[1]} cities </br> in DataBase`;
         content.append(div);
 
-    }else {
-            alert("Ошибка HTTP: " + response.status);
-        }
+    } else {
+        alert("HTTP error: " + response.status);
+    }
+}
+
+async function download() {
+    // update();
+    message1.innerHTML = " ";
+    message2.innerHTML = " ";
+    content.innerHTML = " ";
+    //countries - countries, cities - cities, statistics - statistics, init
+    console.log("State = ", state);
+
+   let response = await fetch('/myApp/index', {method: 'POST', headers: {operation: 'download', entity: state}});
+
+    if (response.ok) {
+        let blob = await response.blob();
+        let downloadRef = document.querySelector(".download");
+        downloadRef.href = URL.createObjectURL(blob);
+        downloadRef.click();
+    } else {
+        alert("HTTP error: " + response.status);
+    }
 
 }
 
-function mainpage(){
+function mainpage() {
     document.location.href = "/myApp/index";
+}
+
+function update() {
+    if (state === "init") {
+        downloadBtn.style.display = "none";
+    } else {
+        downloadBtn.style.display = "block";
+    }
 }
